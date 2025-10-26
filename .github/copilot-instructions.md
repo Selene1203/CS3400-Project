@@ -1,41 +1,61 @@
-# Copilot instructions — CS3400-Project
+### Purpose
+Help an AI coding agent become productive quickly in this C++ Hospital CLI codebase.
 
-Purpose: give an AI coding agent the minimal, concrete knowledge needed to be productive in this repository.
+### Big picture (what this repo implements)
+- A small command-line Hospital Management system (patient registration, triage/priority queue, bed/room allocation, and logs).
+- Core domain objects live under `objects/` (e.g. `Patient`, `Bed`, `Room`, `BedAssignment`, `Log`, `TriageCase`).
+- Data-structure implementations are header-only templates in `utils/` (linked list, hash table, binary tree, priority queue).
+- Tests/smoke-checks are in `tests/` and small example programs are in `main.cpp`.
 
-1) Big-picture
-- This is a small, text-file backed CLI hospital simulation (Week 1 deliverable). The intended implementation language is C++ (per README), and the program is a menu-driven CLI that manipulates plain text files in the repo root.
-- Core subsystems: patient registration (hash table), emergency triage (priority queue), bed allocation (binary tree), and patient logs (linked list). Persistent state is stored in pipe-delimited files such as `patients.txt`, `triage.txt`, `beds.txt`, `rooms.txt`, `bed_assignments.txt`, and `patient_logs.txt`.
+### Key files and how pieces fit
+- `objects/*.h` — domain models used by the CLI. Example: `Room` uses `LinkedList<Bed>` and returns pointers into list nodes (see `objects/room.h`).
+- `utils/linkedList.h` — singly linked list template; exposes `Node<T>* getHead()` and uses `ListNode<T>` layout. Many consumers rely on direct access to `head`.
+- `utils/hashTable.h` — simple chaining table using `LinkedList<Pair<Key,Value>>`. Note: hash function is `key % TABLE_SIZE` (assumes integer-like keys).
+- `utils/priorityQueue.h` — ordered insertion into `LinkedList<PQItem<T>>`. It manipulates `LinkedList` internals (see the front-insert hack) — changing `LinkedList` internals can break this.
+- `utils/binaryTree.h` — binary search tree storing beds; `findFreeBed()` searches for an unoccupied node.
+- `tests/*.cpp` — small smoke tests demonstrating expected behavior and examples of using the utilities. Use these to learn how functions are intended to behave.
 
-2) Key data conventions (discoverable in `README.md`)
-- File format: pipe-delimited records (example: `1|John|Doe|1995-06-12|M|+266-5551234|Maseru|10001`).
-- Date format: `YYYY-MM-DD`. Timestamp format used in examples: `YYYY-MM-DD HH:MM`.
-- Boolean fields use `true`/`false` for `occupied` in `beds.txt`.
-- Triage priority: lower `triage_level` number = higher priority.
+### Project-specific conventions & gotchas (be precise)
+- Header-only templates: data structures are implemented entirely in headers. Add behavior by editing headers, not by adding separate .cpp for templates.
+- LinkedList contract: other modules expect `Node<T>` and `getHead()` to be available. Avoid renaming `getHead()` or changing `ListNode` layout without updating all callers (PriorityQueue, HashTable, Room).
+- HashTable only uses `operator%` on Key in `hashFunction`. Currently written for integer keys; generalizing requires adding a proper hash functor.
+- Priority ordering: lower `triage_level` means higher priority (1 = critical). `TriageCase::operator<` and `PriorityQueue` follow this rule.
+- Lifetime safety: many APIs return pointers to data inside linked-list/tree nodes (e.g., `Room::findBed()` returns `Bed*` into a list node). Be careful when removing nodes — callers may hold dangling pointers.
 
-3) Where to change things
-- If adding or modifying code, place C++ sources under `src/` and keep a single `main` entrypoint (e.g. `src/main.cpp`). If you add build files, include a `Makefile` or `CMakeLists.txt` at repo root.
-- File I/O handlers should read/write the pipe-delimited files listed above. Keep file structure stable; tests and CLI flows rely on exact field order.
+### Build & test (Windows / cmd.exe examples)
+No build system detected. Suggested quick commands (works if you have g++/MinGW on PATH). Run from project root (cmd.exe):
 
-4) Coding guidance for agents (concrete, repo-specific)
-- When you update record structure (add/remove fields), update the corresponding `README.md` table and all places that parse that file. Example: changing `patients.txt` fields requires updating code that parses `patient_id|first_name|...|national_id`.
-- Follow the data examples in `README.md` when generating fixtures; use the same separators and date formats.
-- Use append-on-write semantics for logs and triage entries (the README shows appending new lines for persistence).
-- For bed assignment, prefer a deterministic traversal matching README pseudocode (check current node, then left, then right) so saved `beds.txt` ordering and `bed_id` mapping remain stable.
+```
+:: Build main demo
+g++ -std=c++17 -I. main.cpp -o main.exe
 
-5) Build / run / debug notes (what I found)
-- No source files or build configuration were detected in the repo when this file was generated — only `README.md` is present. If you want me to generate C++ skeletons or a `Makefile`/`CMakeLists.txt`, say so.
-- Example build command to use on development machines (Windows `cmd.exe`):
-  - `g++ -std=c++17 -O2 -Iinclude -o hospital.exe src\*.cpp` (adjust sources as added)
-- Run the CLI by executing the produced binary; data files live adjacent to the executable by default according to README examples.
+:: Build tests (each test is a small executable)
+g++ -std=c++17 -I. tests/test_datastructures.cpp -o test_datastructures.exe
+g++ -std=c++17 -I. tests/test_objects.cpp -o test_objects.exe
 
-6) Tests and CI
-- No tests or CI configs were detected. If you add tests, keep them focused on the parsing and persistence boundary (round-trip read/write of the pipe-delimited files) and on the priority ordering for the triage queue.
+:: Run tests
+test_datastructures.exe
+test_objects.exe
+```
 
-7) When uncertain, prefer conservative changes
-- Don't rename or reformat existing data files without updating `README.md` and any parsing code. Small, local changes that preserve on-disk formats are preferred.
+If using MSVC (Visual Studio Developer Command Prompt), compile similarly with `cl` and appropriate include flags.
 
-8) Quick pointers for reviewers
-- Verify any new code uses the same field ordering as the `README.md` examples.
-- Confirm timestamps are written as `YYYY-MM-DD HH:MM` and booleans as `true`/`false` in `beds.txt`.
+### How to extend safely (practical examples)
+- To add persistence: README.md documents text file formats (patients.txt, triage.txt, beds.txt). Implement file I/O in a new `utils/file_io.h` and call from a new `cli.cpp` or extend `main.cpp`.
+- To generalize `HashTable` to non-integer keys: add a hash-functor template parameter and replace `%` with functor(key) % TABLE_SIZE.
+- To change `LinkedList` internals: first update all call sites that rely on `getHead()` or node layout (PriorityQueue and HashTable). Alternatively, add a safe `pushFront()`/`setHead()` API and migrate consumers.
 
-If anything above is incomplete or you'd like me to scaffold a `src/` layout, a `Makefile`, or add a basic C++ implementation for the four data structures, tell me which piece to generate next.
+### Tests and verification
+- The `tests/` programs are the fastest way to confirm behavior — they perform small unit/smoke checks for each DS and object.
+- When adding features, add a small test in `tests/` to exercise the new behavior (follow format of existing tests).
+
+### Quick references (examples)
+- Room returns a pointer into its `LinkedList<Bed>`: `Bed* free = room.findFreeBed();` (see `objects/room.h`).
+- Priority queue semantics: insert data with `pq.insert(data, priority)` where smaller `priority` = earlier service (see `utils/priorityQueue.h`).
+
+### When uncertain — ask these specific questions
+- Is the intention to support non-integer hash keys? If so, I will add a hash functor and update call sites.
+- Should persistence be implemented now (text-file format in README) or left for a later milestone?
+
+---
+If you'd like, I can: (a) merge this into an existing `.github/copilot-instructions.md` if present, (b) add small compile-and-run CI scripts, or (c) implement file-I/O for the txt formats described in `README.md`.

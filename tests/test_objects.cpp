@@ -31,8 +31,8 @@ int main() {
     if (l.getActivity() != "Checked vitals") { cout<<"Log: FAIL getActivity\n"; ok = false; } else cout<<"Log: getActivity OK\n";
 
     // TriageCase
-    TriageCase t1(1, "Broken arm", 3, "2025-10-24 09:00");
-    TriageCase t2(2, "Cardiac arrest", 1, "2025-10-24 09:05");
+    Case t1(1, "Broken arm", 3, "2025-10-24 09:00");
+    Case t2(2, "Cardiac arrest", 1, "2025-10-24 09:05");
     if (!(t2 < t1)) { cout<<"TriageCase: FAIL operator< (priority ordering)\n"; ok = false; } else cout<<"TriageCase: operator< OK\n";
 
     cout << (ok ? "ALL OBJECT TESTS PASSED\n" : "SOME OBJECT TESTS FAILED\n");

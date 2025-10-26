@@ -3,43 +3,38 @@
 
 #include <iostream>
 #include <string>
-using namespace std;
 
-class TriageCase {
-private:
-    int patient_id;
-    string condition;
-    int triage_level; // 1 = critical, 5 = mild
-    string time_reported;
+struct Case {
+    int patient_id = 0;
+    std::string condition;
+    int triage_level = 5; // 1 = critical, 5 = mild
+    std::string time_reported;
 
-public:
-    // Constructors
-    TriageCase() {}
-    TriageCase(int id, string cond, int level, string time)
+    Case() = default;
+    Case(int id, const std::string& cond, int level, const std::string& time)
         : patient_id(id), condition(cond), triage_level(level), time_reported(time) {}
 
-    // Getters
     int getPatientID() const { return patient_id; }
-    string getCondition() const { return condition; }
+    const std::string& getCondition() const { return condition; }
     int getLevel() const { return triage_level; }
-    string getTimeReported() const { return time_reported; }
+    const std::string& getTimeReported() const { return time_reported; }
 
-    // Display
     void display() const {
-        cout << "Patient ID: " << patient_id
-             << " | Level: " << triage_level
-             << " | Condition: " << condition
-             << " | Time: " << time_reported << endl;
+        std::cout << "Patient ID: " << patient_id
+                  << " | Level: " << triage_level
+                  << " | Condition: " << condition
+                  << " | Time: " << time_reported << std::endl;
     }
 
-    // Comparison (lower number = higher priority)
-    bool operator<(const TriageCase& other) const {
+    bool operator<(const Case& other) const {
         return triage_level < other.triage_level;
     }
 
-    bool operator==(const TriageCase& other) const {
+    bool operator==(const Case& other) const {
         return patient_id == other.patient_id && triage_level == other.triage_level;
     }
 };
+
+
 
 #endif
