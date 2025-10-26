@@ -3,6 +3,7 @@
 
 #include "linkedList.h"
 #include <iostream>
+#include <functional>
 using namespace std;
 
 template <typename Key, typename Value>
@@ -58,6 +59,28 @@ public:
                 temp = temp->next;
             }
             cout << "NULL" << endl;
+        }
+    }
+
+    // Iterate through all entries (non-const). Callback receives (key, value&)
+    void forEach(const std::function<void(const Key&, Value&)>& fn) {
+        for (int i = 0; i < TABLE_SIZE; ++i) {
+            Node<Pair<Key, Value>>* temp = table[i].getHead();
+            while (temp != nullptr) {
+                fn(temp->data.key, temp->data.value);
+                temp = temp->next;
+            }
+        }
+    }
+
+    // Iterate through all entries (const). Callback receives (key, const value&)
+    void forEachConst(const std::function<void(const Key&, const Value&)>& fn) const {
+        for (int i = 0; i < TABLE_SIZE; ++i) {
+            Node<Pair<Key, Value>>* temp = table[i].getHead();
+            while (temp != nullptr) {
+                fn(temp->data.key, temp->data.value);
+                temp = temp->next;
+            }
         }
     }
 };

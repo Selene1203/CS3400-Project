@@ -26,6 +26,11 @@ public:
     // Getters
     int getID() const { return patient_id; }
     string getName() const { return first_name + " " + last_name; }
+    // Individual field getters
+    const string& getFirstName() const { return first_name; }
+    const string& getLastName() const { return last_name; }
+    const string& getDOB() const { return dob; }
+    const string& getAddress() const { return address; }
     string getGender() const { return gender; }
     string getPhone() const { return phone; }
     int getNationalID() const { return national_id; }

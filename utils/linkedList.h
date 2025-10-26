@@ -30,6 +30,10 @@ public:
     Node<T>* getHead() {
         return head;
     }
+    // const overload
+    Node<T>* getHead() const {
+        return head;
+    }
 
     // Add item at end
     void insertAtEnd(T value) {

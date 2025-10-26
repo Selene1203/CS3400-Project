@@ -7,7 +7,9 @@ int main() {
     bool ok = true;
 
     Patients ps;
-
+    
+    ps.loadFromFile("data\\patients.txt");
+    
     // Create two patients
     int id1 = ps.create("John", "Doe", "M", "1990-01-01", "+100", "123 Main", 555001);
     int id2 = ps.create("Jane", "Smith", "F", "1985-05-05", "+200", "456 Elm", 555002);
@@ -36,6 +38,9 @@ int main() {
     Patient p3(10, "Alice", "Brown", "F", "1992-02-02", "+300", "12 Pine", 555003);
     if (!ps.add(p3)) { cout << "Patients: FAIL add(p3) returned false\n"; ok = false; }
     if (ps.find(10) == nullptr) { cout << "Patients: FAIL find added patient\n"; ok = false; } else cout << "Patients: add/find OK\n";
+
+    // Save patients to file
+    ps.saveToFile("data\\patients.txt");
 
     cout << (ok ? "ALL PATIENTS TESTS PASSED\n" : "SOME PATIENTS TESTS FAILED\n");
     return ok ? 0 : 1;
