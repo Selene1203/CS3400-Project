@@ -26,6 +26,13 @@ private:
 public:
     LinkedList() : head(nullptr) {}
 
+    // Insert item at front
+    void insertAtFront(const T& value) {
+        ListNode<T>* newNode = new ListNode<T>(value);
+        newNode->next = head;
+        head = newNode;
+    }
+
     // Expose head for other utilities that rely on direct access
     Node<T>* getHead() {
         return head;

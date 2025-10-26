@@ -72,20 +72,16 @@ private:
             TreeNode<T>* newTreeNode = new TreeNode<T>(value);
 
             // Insert pointer into auxiliary in-order linked list
-            Node<TreeNode<T>*>* newListNode = new Node<TreeNode<T>*>(newTreeNode);
             Node<TreeNode<T>*>* head = nodeList.getHead();
-            if (head == nullptr) {
-                // list empty -> set head
-                *((Node<TreeNode<T>*>**)&nodeList) = newListNode;
-            } else if (value < head->data->data) {
-                // insert at front
-                newListNode->next = head;
-                *((Node<TreeNode<T>*>**)&nodeList) = newListNode;
+            if (head == nullptr || value < head->data->data) {
+                nodeList.insertAtFront(newTreeNode);
             } else {
                 // find insert position (before first node with data > value)
                 Node<TreeNode<T>*>* cur = head;
                 while (cur->next != nullptr && cur->next->data->data < value)
                     cur = cur->next;
+
+                Node<TreeNode<T>*>* newListNode = new Node<TreeNode<T>*>(newTreeNode);
                 newListNode->next = cur->next;
                 cur->next = newListNode;
             }
