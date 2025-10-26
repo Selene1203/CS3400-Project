@@ -92,7 +92,7 @@ public:
             std::cout << "1) Register patient\n2) Add triage case\n3) Assign next free bed to patient\n";
             std::cout << "4) Release bed\n5) View patient\n6) View patient logs\n7) Save and exit\n";
 
-            std::string choiceStr = readLine("Choice: ");
+            std::string choiceStr = readLine("Choice (1-7): ");
             if (choiceStr.empty()) break; // EOF or empty
 
             int choice = 0;
@@ -102,36 +102,36 @@ public:
 
             if (choice == 1) {
                 // Prompt for each field on its own line so fields can contain spaces
-                std::string f = readLine("First name: "); if (f.empty()) continue;
-                std::string l = readLine("Last name: "); if (l.empty()) continue;
-                std::string g = readLine("Gender: ");
-                std::string d = readLine("DOB: ");
-                std::string p = readLine("Phone: ");
-                std::string a = readLine("Address: ");
-                std::string nidStr = readLine("National ID: ");
+                std::string f = readLine("First name (e.g. John): "); if (f.empty()) continue;
+                std::string l = readLine("Last name (e.g. Doe): "); if (l.empty()) continue;
+                std::string g = readLine("Gender (M/F/Other): ");
+                std::string d = readLine("DOB (YYYY-MM-DD): ");
+                std::string p = readLine("Phone (e.g. 555-1234): ");
+                std::string a = readLine("Address (street, city): ");
+                std::string nidStr = readLine("National ID (numbers): ");
                 int nid = 0; try { nid = std::stoi(nidStr); } catch(...) { nid = 0; }
                 int id = registerPatient(f,l,g,d,p,a,nid);
                 std::cout << "Registered id=" << id << '\n';
             } else if (choice == 2) {
-                std::string pidStr = readLine("Patient ID: "); if (pidStr.empty()) continue;
-                std::string levelStr = readLine("Triage level (1=critical): "); if (levelStr.empty()) continue;
-                std::string condition = readLine("Condition: ");
-                std::string time = readLine("Time reported: ");
+                std::string pidStr = readLine("Patient ID (numeric): "); if (pidStr.empty()) continue;
+                std::string levelStr = readLine("Triage level (1=critical, higher=less urgent): "); if (levelStr.empty()) continue;
+                std::string condition = readLine("Condition (brief description): ");
+                std::string time = readLine("Time reported (e.g. 2025-10-26T12:00): ");
                 int pid = 0; int level = 0;
                 try { pid = std::stoi(pidStr); } catch(...) { pid = 0; }
                 try { level = std::stoi(levelStr); } catch(...) { level = 0; }
                 addTriageCase(pid, level, condition, time);
             } else if (choice == 3) {
-                std::string pidStr = readLine("Patient ID: "); if (pidStr.empty()) continue;
+                std::string pidStr = readLine("Patient ID (numeric): "); if (pidStr.empty()) continue;
                 int pid = 0; try { pid = std::stoi(pidStr); } catch(...) { pid = 0; }
                 int bid = assignBedToPatient(pid);
                 if (bid < 0) std::cout << "No free bed available\n"; else std::cout << "Assigned bed " << bid << '\n';
             } else if (choice == 4) {
-                std::string bidStr = readLine("Bed ID: "); if (bidStr.empty()) continue;
+                std::string bidStr = readLine("Bed ID (numeric): "); if (bidStr.empty()) continue;
                 int bid = 0; try { bid = std::stoi(bidStr); } catch(...) { bid = 0; }
                 if (!releaseBed(bid)) std::cout << "Failed\n"; else std::cout << "Released\n";
             } else if (choice == 5) {
-                std::string pidStr = readLine("Patient ID: "); if (pidStr.empty()) continue;
+                std::string pidStr = readLine("Patient ID (numeric): "); if (pidStr.empty()) continue;
                 int pid = 0; try { pid = std::stoi(pidStr); } catch(...) { pid = 0; }
                 Patient* p = findPatient(pid);
                 if (p) p->display(); else std::cout << "Not found\n";
