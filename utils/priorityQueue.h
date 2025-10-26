@@ -27,14 +27,11 @@ public:
     // Insert in order (lower priority value = higher priority)
     void insert(T data, int priority) {
         PQItem<T> newItem = {priority, data};
-        Node<PQItem<T>>* newNode = new Node<PQItem<T>>(newItem);
-
         Node<PQItem<T>>* head = list.getHead();
 
         // If list is empty or new item has higher priority
         if (head == nullptr || newItem.priority < head->data.priority) {
-            newNode->next = head;
-            *((Node<PQItem<T>>**)&list) = newNode; // place at front
+            list.insertAtFront(newItem);
             return;
         }
 
@@ -43,6 +40,7 @@ public:
         while (current->next != nullptr && current->next->data.priority <= newItem.priority)
             current = current->next;
 
+        Node<PQItem<T>>* newNode = new Node<PQItem<T>>(newItem);
         newNode->next = current->next;
         current->next = newNode;
     }

@@ -28,21 +28,23 @@ public:
         if (node == nullptr) return; // shouldn't happen
 
         Bed* bedPtr = &node->data;
-        Node<Bed*>* newNode = new Node<Bed*>(bedPtr);
         Node<Bed*>* head = bedList.getHead();
-        if (head == nullptr) {
-            // set head
-            *((Node<Bed*>**)&bedList) = newNode;
-        } else if (bedPtr->getBedID() < head->data->getBedID()) {
-            newNode->next = head;
-            *((Node<Bed*>**)&bedList) = newNode;
-        } else {
-            Node<Bed*>* cur = head;
-            while (cur->next != nullptr && cur->next->data->getBedID() < bedPtr->getBedID())
-                cur = cur->next;
-            newNode->next = cur->next;
-            cur->next = newNode;
+        if (head == nullptr || bedPtr->getBedID() < head->data->getBedID()) {
+            bedList.insertAtFront(bedPtr);
+            return;
         }
+
+        Node<Bed*>* cur = head;
+        while (cur->next != nullptr && cur->next->data->getBedID() < bedPtr->getBedID())
+            cur = cur->next;
+
+        // Avoid inserting duplicates if the bed already exists in list
+        if (cur->next != nullptr && cur->next->data->getBedID() == bedPtr->getBedID())
+            return;
+
+        Node<Bed*>* newNode = new Node<Bed*>(bedPtr);
+        newNode->next = cur->next;
+        cur->next = newNode;
     }
 
     // Assign a bed by id. Returns true if the bed was found and assigned.
