@@ -1,20 +1,10 @@
-#include "objects/room.h"
+#include "objects/system.h"
 
 int main() {
-    Room r1(101);
-
-    r1.addBed(Bed(1, 101));
-    r1.addBed(Bed(2, 101));
-    r1.addBed(Bed(3, 101));
-
-    r1.displayBeds();
-
-    r1.assignBed(2);
-
-    Bed* freeBed = r1.findFreeBed();
-    if (freeBed != nullptr) {
-        cout << "Next free bed: " << freeBed->getBedID() << endl;
-    }
-
+    // Create system pointed at the data directory, load state, run CLI, then save on exit
+    System sys("data");
+    sys.loadAll();
+    sys.runCLI();
+    sys.saveAll();
     return 0;
 }
