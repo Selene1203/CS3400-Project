@@ -10,23 +10,97 @@ struct TreeNode {
     bool occupied;
     TreeNode* left;
     TreeNode* right;
+    int height;
 
-    TreeNode(T val) : data(val), occupied(false), left(nullptr), right(nullptr) {}
+    TreeNode(T val) : data(val), occupied(false), left(nullptr), right(nullptr), height(1) {}
 };
 
 template <typename T>
 class BinaryTree {
 private:
     TreeNode<T>* root;
+    // AVL helpers
+    int height(TreeNode<T>* node) {
+        return node ? node->height : 0;
+    }
+
+    int getBalance(TreeNode<T>* node) {
+        if (!node) return 0;
+        return height(node->left) - height(node->right);
+    }
+
+    void updateHeight(TreeNode<T>* node) {
+        if (node) node->height = 1 + std::max(height(node->left), height(node->right));
+    }
+
+    TreeNode<T>* rotateRight(TreeNode<T>* y) {
+        TreeNode<T>* x = y->left;
+        TreeNode<T>* T2 = x->right;
+
+        // Perform rotation
+        x->right = y;
+        y->left = T2;
+
+        // Update heights
+        updateHeight(y);
+        updateHeight(x);
+
+        return x;
+    }
+
+    TreeNode<T>* rotateLeft(TreeNode<T>* x) {
+        TreeNode<T>* y = x->right;
+        TreeNode<T>* T2 = y->left;
+
+        // Perform rotation
+        y->left = x;
+        x->right = T2;
+
+        // Update heights
+        updateHeight(x);
+        updateHeight(y);
+
+        return y;
+    }
 
     TreeNode<T>* insert(TreeNode<T>* node, T value) {
+        // Standard BST insert
         if (node == nullptr)
             return new TreeNode<T>(value);
 
         if (value < node->data)
             node->left = insert(node->left, value);
-        else
+        else if (node->data < value)
             node->right = insert(node->right, value);
+        else
+            return node; // equal keys not inserted
+
+        // Update height of this ancestor node
+        updateHeight(node);
+
+        // Get balance factor
+        int balance = getBalance(node);
+
+        // Left Left Case
+        if (balance > 1 && value < node->left->data)
+            return rotateRight(node);
+
+        // Right Right Case
+        if (balance < -1 && node->right && node->right->data < value)
+            return rotateLeft(node);
+
+        // Left Right Case
+        if (balance > 1 && node->left && node->left->data < value) {
+            node->left = rotateLeft(node->left);
+            return rotateRight(node);
+        }
+
+        // Right Left Case
+        if (balance < -1 && node->right && value < node->right->data) {
+            node->right = rotateRight(node->right);
+            return rotateLeft(node);
+        }
+
         return node;
     }
 
@@ -39,9 +113,10 @@ private:
 
     TreeNode<T>* findFree(TreeNode<T>* node) {
         if (node == nullptr) return nullptr;
-        if (!node->occupied) return node;
+        // Prefer left subtree first to find lowest-value free bed
         TreeNode<T>* left = findFree(node->left);
-        if (left != nullptr) return left;
+        if (left != nullptr && !left->occupied) return left;
+        if (!node->occupied) return node;
         return findFree(node->right);
     }
 
@@ -69,6 +144,20 @@ public:
 
     void display() {
         inorder(root);
+    }
+
+    // Find node by value (non-destructive). Returns nullptr if not found.
+    TreeNode<T>* find(T value) {
+        TreeNode<T>* node = root;
+        while (node != nullptr) {
+            if (node->data == value)
+                return node;
+            else if (value < node->data)
+                node = node->left;
+            else
+                node = node->right;
+        }
+        return nullptr;
     }
 
     TreeNode<T>* findFreeBed() {
