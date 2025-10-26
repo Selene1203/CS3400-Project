@@ -2,6 +2,7 @@
 #define BINARYTREE_H
 
 #include <iostream>
+#include "linkedList.h"
 using namespace std;
 
 template <typename T>
@@ -19,6 +20,8 @@ template <typename T>
 class BinaryTree {
 private:
     TreeNode<T>* root;
+    // Maintain an auxiliary linked list of pointers to tree nodes in in-order
+    LinkedList<TreeNode<T>*> nodeList;
     // AVL helpers
     int height(TreeNode<T>* node) {
         return node ? node->height : 0;
@@ -65,8 +68,30 @@ private:
 
     TreeNode<T>* insert(TreeNode<T>* node, T value) {
         // Standard BST insert
-        if (node == nullptr)
-            return new TreeNode<T>(value);
+        if (node == nullptr) {
+            TreeNode<T>* newTreeNode = new TreeNode<T>(value);
+
+            // Insert pointer into auxiliary in-order linked list
+            Node<TreeNode<T>*>* newListNode = new Node<TreeNode<T>*>(newTreeNode);
+            Node<TreeNode<T>*>* head = nodeList.getHead();
+            if (head == nullptr) {
+                // list empty -> set head
+                *((Node<TreeNode<T>*>**)&nodeList) = newListNode;
+            } else if (value < head->data->data) {
+                // insert at front
+                newListNode->next = head;
+                *((Node<TreeNode<T>*>**)&nodeList) = newListNode;
+            } else {
+                // find insert position (before first node with data > value)
+                Node<TreeNode<T>*>* cur = head;
+                while (cur->next != nullptr && cur->next->data->data < value)
+                    cur = cur->next;
+                newListNode->next = cur->next;
+                cur->next = newListNode;
+            }
+
+            return newTreeNode;
+        }
 
         if (value < node->data)
             node->left = insert(node->left, value);

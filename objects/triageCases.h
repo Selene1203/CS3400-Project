@@ -4,6 +4,9 @@
 #include <iostream>
 #include "../utils/priorityQueue.h"
 #include "traigeCase.h" // current project file (struct Case)
+#include <fstream>
+#include <sstream>
+#include <vector>
 
 // Provide operator<< for Case so PriorityQueue::display() can print items.
 inline std::ostream& operator<<(std::ostream& os, const Case& c) {
@@ -59,6 +62,49 @@ public:
             pq.removeHighestPriority();
         }
         count = 0;
+    }
+
+    // Persist triage cases to a file. Each line: patient_id|triage_level|condition|time_reported
+    bool saveToFile(const std::string& path) const {
+        std::ofstream out(path);
+        if (!out.is_open()) return false;
+
+        pq.forEachConst([&](const PQItem<Case>& item){
+            const Case& c = item.data;
+            out << c.getPatientID() << '|' << c.getLevel() << '|' << c.getCondition() << '|' << c.getTimeReported() << '\n';
+        });
+
+        out.close();
+        return true;
+    }
+
+    // Load triage cases from file. If clearExisting true (default), clears current queue.
+    bool loadFromFile(const std::string& path, bool clearExisting = true) {
+        std::ifstream in(path);
+        if (!in.is_open()) return false;
+
+        if (clearExisting) clear();
+
+        std::string line;
+        while (std::getline(in, line)) {
+            if (line.empty()) continue;
+            std::istringstream ss(line);
+            std::string token;
+            std::vector<std::string> parts;
+            while (std::getline(ss, token, '|')) parts.push_back(token);
+            if (parts.size() != 4) continue;
+
+            int pid = std::stoi(parts[0]);
+            int level = std::stoi(parts[1]);
+            std::string cond = parts[2];
+            std::string time = parts[3];
+
+            Case c(pid, cond, level, time);
+            push(c);
+        }
+
+        in.close();
+        return true;
     }
 
 private:

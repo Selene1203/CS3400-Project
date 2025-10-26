@@ -2,6 +2,7 @@
 #define PRIORITYQUEUE_H
 
 #include "linkedList.h"
+#include <functional>
 #include <iostream>
 using namespace std;
 
@@ -80,6 +81,24 @@ public:
             temp = temp->next;
         }
         cout << "NULL" << endl;
+    }
+
+    // Iterate over items in priority order (head->tail). Callback receives const PQItem<T>&
+    void forEachConst(const std::function<void(const PQItem<T>&)>& fn) const {
+        Node<PQItem<T>>* temp = list.getHead();
+        while (temp != nullptr) {
+            fn(temp->data);
+            temp = temp->next;
+        }
+    }
+
+    // Non-const iteration
+    void forEach(const std::function<void(const PQItem<T>&)>& fn) {
+        Node<PQItem<T>>* temp = list.getHead();
+        while (temp != nullptr) {
+            fn(temp->data);
+            temp = temp->next;
+        }
     }
 };
 
